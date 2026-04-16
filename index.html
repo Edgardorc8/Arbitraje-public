@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arbitraje Master - Vzla</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'JetBrains Mono', monospace; background-color: #05070a; }
+        .glass-card { background: rgba(17, 25, 40, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); }
+        .input-field { background: #111827; border: 1px solid #374151; color: #f3f4f6; transition: all 0.2s; }
+        .input-field:focus { border-color: #3b82f6; ring: 1px solid #3b82f6; outline: none; }
+        .label-text { font-size: 0.65rem; color: #9ca3af; font-weight: bold; margin-bottom: 2px; display: block; }
+    </style>
+</head>
+<body class="text-gray-200 p-4 flex justify-center items-start min-h-screen">
+
+    <div class="w-full max-w-lg glass-card rounded-3xl p-6 shadow-2xl">
+        <header class="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
+            <div>
+                <h1 class="text-xl font-black text-white">ARBITRAJE <span class="text-blue-500 text-sm">PRO</span></h1>
+                <p class="text-[10px] text-gray-500">VALENCIA, CARABOBO | E.P. EDITION</p>
+            </div>
+            <div class="text-right">
+                <span id="status" class="text-[10px] bg-green-500/10 text-green-500 px-2 py-1 rounded-full border border-green-500/20 uppercase">Datos Guardados</span>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="space-y-4">
+                <h2 class="text-[10px] text-blue-400 font-bold uppercase tracking-widest border-l-2 border-blue-500 pl-2">1. Adquisición</h2>
+                <div>
+                    <span class="label-text">USD COMPRADOS</span>
+                    <input type="number" id="monto" value="445.79" class="input-field w-full p-3 rounded-xl font-bold text-lg">
+                </div>
+                <div>
+                    <span class="label-text">TASA SUBASTA (BS)</span>
+                    <input type="number" id="tasaSub" value="38.50" step="0.01" class="input-field w-full p-3 rounded-xl">
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <h2 class="text-[10px] text-red-400 font-bold uppercase tracking-widest border-l-2 border-red-500 pl-2">2. Costo Operativo</h2>
+                <div>
+                    <span class="label-text">COMISIÓN TARJETA % (BANCO)</span>
+                    <input type="number" id="comTj" value="5.0" step="0.1" class="input-field w-full p-3 rounded-xl text-red-400">
+                </div>
+                <div>
+                    <span class="label-text">TASA BCV (COMISIONES)</span>
+                    <input type="number" id="tasaBcv" value="36.62" step="0.01" class="input-field w-full p-3 rounded-xl">
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div class="space-y-4">
+                <h2 class="text-[10px] text-orange-400 font-bold uppercase tracking-widest border-l-2 border-orange-500 pl-2">3. Fondeo & Crypto</h2>
+                <div>
+                    <span class="label-text">COMISIÓN COMPRA CRYPTO %</span>
+                    <input type="number" id="comCr" value="2.5" step="0.1" class="input-field w-full p-3 rounded-xl text-orange-400">
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <h2 class="text-[10px] text-green-400 font-bold uppercase tracking-widest border-l-2 border-green-500 pl-2">4. Venta (Cierre)</h2>
+                <div>
+                    <span class="label-text">TASA VENTA P2P (VES/USDT)</span>
+                    <input type="number" id="tasaP2p" value="44.80" step="0.01" class="input-field w-full p-3 rounded-xl text-green-400 font-bold">
+                </div>
+            </div>
+        </div>
+
+        <button onclick="calculate()" class="w-full bg-blue-600 hover:bg-blue-500 py-5 rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_0_25px_rgba(59,130,246,0.3)] transition-all transform active:scale-95 mb-6">
+            Ejecutar Cálculo Detallado
+        </button>
+
+        <div id="results" class="hidden space-y-4 animate-in slide-in-from-bottom-5 duration-500">
+            <div class="grid grid-cols-2 gap-2">
+                <div class="bg-black/30 p-3 rounded-xl border border-gray-800">
+                    <p class="text-[8px] text-gray-500 uppercase">Debitado Real Banco</p>
+                    <p id="resTotalVes" class="text-sm font-bold text-gray-200"></p>
+                </div>
+                <div class="bg-black/30 p-3 rounded-xl border border-gray-800">
+                    <p class="text-[8px] text-gray-500 uppercase">USDT Recibidos</p>
+                    <p id="resUsdt" class="text-sm font-bold text-orange-400"></p>
+                </div>
+            </div>
+
+            <div class="bg-blue-500/5 border border-blue-500/20 rounded-3xl p-6 text-center relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-2">
+                    <p class="text-[8px] text-blue-500 font-bold uppercase">Net Profit</p>
+                </div>
+                <p id="resProfitVes" class="text-4xl font-black text-blue-500"></p>
+                <p id="resProfitUsd" class="text-sm text-gray-400 mt-1"></p>
+                
+                <div class="mt-4 pt-4 border-t border-blue-500/10 grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-[8px] text-gray-500 uppercase">ROI (Margen)</p>
+                        <p id="resRoi" class="text-xs font-bold text-white"></p>
+                    </div>
+                    <div>
+                        <p class="text-[8px] text-gray-500 uppercase">Break-even Tasa</p>
+                        <p id="resBreak" class="text-xs font-bold text-white"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-save data
+        const inputs = ['monto', 'tasaSub', 'comTj', 'tasaBcv', 'comCr', 'tasaP2p'];
+        window.onload = () => {
+            inputs.forEach(id => {
+                const saved = localStorage.getItem(id);
+                if (saved) document.getElementById(id).value = saved;
+            });
+        };
+
+        function calculate() {
+            const m = parseFloat(document.getElementById('monto').value) || 0;
+            const tSub = parseFloat(document.getElementById('tasaSub').value) || 0;
+            const cTj = parseFloat(document.getElementById('comTj').value) / 100;
+            const tBcv = parseFloat(document.getElementById('tasaBcv').value) || 0;
+            const cCr = parseFloat(document.getElementById('comCr').value) / 100;
+            const tP2p = parseFloat(document.getElementById('tasaP2p').value) || 0;
+
+            // Guardar para la próxima
+            inputs.forEach(id => localStorage.setItem(id, document.getElementById(id).value));
+
+            // --- CÁLCULOS ---
+            // 1. Gasto real en BS
+            const costoDolaresVes = m * tSub; // Lo que te quitaron por la subasta
+            const comisionBancoVes = (m * cTj) * tBcv; // Lo que pagas por pasar la tarjeta (a tasa BCV)
+            const gastoTotalVes = costoDolaresVes + comisionBancoVes;
+
+            // 2. USDT que llegan a la wallet
+            const usdtNetos = m * (1 - cCr);
+            
+            // 3. Retorno al vender en P2P
+            const ingresoVes = usdtNetos * tP2p;
+
+            // 4. Profit & Métricas
+            const profitVes = ingresoVes - gastoTotalVes;
+            const profitUsd = profitVes / tP2p;
+            const roi = (profitVes / gastoTotalVes) * 100;
+            const breakEven = gastoTotalVes / usdtNetos;
+
+            // --- UI UPDATE ---
+            document.getElementById('resTotalVes').innerText = gastoTotalVes.toLocaleString('es-VE') + " BS";
+            document.getElementById('resUsdt').innerText = usdtNetos.toFixed(2) + " USDT";
+            document.getElementById('resProfitVes').innerText = (profitVes > 0 ? "+" : "") + profitVes.toLocaleString('es-VE', {minimumFractionDigits: 2}) + " BS";
+            document.getElementById('resProfitUsd').innerText = "$" + profitUsd.toFixed(2) + " USD de ganancia";
+            document.getElementById('resRoi').innerText = roi.toFixed(2) + "%";
+            document.getElementById('resBreak').innerText = breakEven.toFixed(2) + " BS/USDT";
+
+            document.getElementById('results').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
