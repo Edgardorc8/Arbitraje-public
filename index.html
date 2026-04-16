@@ -3,72 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arbitraje Pro - Profit Calc</title>
+    <title>Arbitraje Master V10</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #05070a; font-family: 'Inter', sans-serif; }
-        .glass-card { background: #0f172a; border: 1px solid #1e293b; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-        input { background: #1e293b !important; border: 1px solid #334155 !important; color: #f8fafc !important; font-weight: 700; text-align: center; }
-        input:focus { border-color: #3b82f6 !important; outline: none; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
-        .label-text { font-size: 0.65rem; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px; }
+        body { background-color: #020617; font-family: 'Inter', sans-serif; }
+        .card-vzla { background: #0f172a; border: 1px solid #1e293b; }
+        input { background: #1e293b !important; border: 1px solid #334155 !important; color: white !important; text-align: center; }
+        input:focus { border-color: #3b82f6 !important; outline: none; }
+        .label-style { font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 2px; display: block; }
     </style>
 </head>
-<body class="p-4 text-slate-200 flex flex-col items-center">
+<body class="p-4 text-slate-200 min-h-screen flex flex-col items-center">
 
-    <div class="w-full max-w-md glass-card rounded-[2.5rem] p-8 mt-4">
-        <header class="mb-8 text-center">
-            <h1 class="text-2xl font-black tracking-tighter text-white">PROFIT <span class="text-blue-500">CALCULATOR</span></h1>
-            <p class="text-[10px] text-slate-500 font-bold tracking-widest uppercase">Arbitraje Vzla Edition</p>
-        </header>
+    <div class="w-full max-w-md card-vzla rounded-[2rem] p-6 shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-lg font-black text-blue-500 italic">VZLA <span class="text-white">PROFIT</span></h1>
+            <div class="flex gap-2">
+                <button onclick="normalizarTodo()" class="bg-blue-500/10 text-blue-400 text-[9px] font-bold px-3 py-1 rounded-full border border-blue-500/20 uppercase">Arreglar Puntos</button>
+                <button onclick="resetear()" class="bg-red-500/10 text-red-500 text-[9px] font-bold px-3 py-1 rounded-full border border-red-500/20 uppercase">Limpiar</button>
+            </div>
+        </div>
 
-        <div class="space-y-6">
-            <div class="bg-blue-500/5 p-5 rounded-3xl border border-blue-500/20">
-                <label class="label-text text-blue-400 text-center">Monto Comprado en Subasta (Saldo Tarjeta)</label>
-                <div class="flex items-center justify-center">
-                    <span class="text-2xl font-bold mr-2 text-blue-400">$</span>
-                    <input type="number" id="saldo" value="465.62" oninput="calc()" class="text-3xl w-full p-2 rounded-2xl">
+        <div class="space-y-4">
+            <div class="p-4 bg-blue-500/5 rounded-2xl border border-blue-500/10">
+                <label class="label-style text-blue-400 text-center">Saldo Total Tarjeta (USD)</label>
+                <input type="text" id="saldo" inputmode="decimal" placeholder="0.00" oninput="sanitizar(this); calc()" class="w-full p-4 rounded-xl text-3xl font-bold">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="label-style text-center">Comisión Banco %</label>
+                    <input type="text" id="comB" inputmode="decimal" value="5.0" oninput="sanitizar(this); calc()" class="w-full p-3 rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="label-style text-center">Comisión Fondeo %</label>
+                    <input type="text" id="comF" inputmode="decimal" value="2.5" oninput="sanitizar(this); calc()" class="w-full p-3 rounded-xl text-sm text-orange-400">
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="label-text">Comisión Banco %</label>
-                    <input type="number" id="comB" value="4.45" oninput="calc()" step="0.01" class="w-full p-3 rounded-xl">
-                </div>
-                <div>
-                    <label class="label-text">Comisión Fondeo %</label>
-                    <input type="number" id="comF" value="2.5" oninput="calc()" step="0.1" class="w-full p-3 rounded-xl">
-                </div>
-            </div>
-
-            <div class="bg-slate-900/50 p-5 rounded-3xl border border-dashed border-slate-700 text-center">
-                <p class="label-text">Monto Neto a pasar (BPay/Binance)</p>
+            <div class="p-4 bg-white/5 rounded-2xl border border-white/10 text-center shadow-inner">
+                <p class="label-style">Monto a colocar en BPay</p>
                 <p id="montoNeto" class="text-4xl font-black text-white">$0.00</p>
-                <p id="comUsd" class="text-[10px] text-red-500 font-bold mt-1"></p>
+                <p id="comUsd" class="text-[10px] text-red-500 font-bold mt-1 uppercase">Esperando datos...</p>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="label-text">Tasa Subasta (Bs)</label>
-                    <input type="number" id="tasaS" value="38.50" oninput="calc()" class="w-full p-3 rounded-xl">
+                    <label class="label-style text-center">Tasa Subasta</label>
+                    <input type="text" id="tasaS" inputmode="decimal" placeholder="38.50" oninput="sanitizar(this); calc()" class="w-full p-3 rounded-xl text-sm">
                 </div>
                 <div>
-                    <label class="label-text">Tasa Venta (Bs)</label>
-                    <input type="number" id="tasaV" value="44.80" oninput="calc()" class="w-full p-3 rounded-xl border-emerald-500/20">
+                    <label class="label-style text-center text-emerald-500">Tasa Venta USDT</label>
+                    <input type="text" id="tasaV" inputmode="decimal" placeholder="44.80" oninput="sanitizar(this); calc()" class="w-full p-3 rounded-xl text-sm border-emerald-500/20 font-bold">
                 </div>
             </div>
 
-            <div id="resBox" class="bg-emerald-500/10 p-6 rounded-[2rem] border border-emerald-500/20 text-center shadow-inner">
-                <p class="label-text text-emerald-500">Profit Neto del Ciclo</p>
+            <div class="bg-emerald-500/10 p-5 rounded-[1.5rem] border border-emerald-500/20 text-center relative overflow-hidden">
+                <p class="label-style text-emerald-500">Profit Neto Estimado</p>
                 <p id="profitBs" class="text-4xl font-black text-emerald-500">0.00 Bs</p>
-                <p id="profitUsd" class="text-sm font-bold text-slate-400 mt-1">$0.00</p>
+                <p id="profitUsd" class="text-xs font-bold text-slate-400 mt-1">$0.00 de profit</p>
                 
-                <div class="mt-6 pt-4 border-t border-emerald-500/10 flex justify-between items-center text-[10px] font-bold text-slate-500 uppercase">
-                    <div>
-                        <p>ROI: <span id="roi" class="text-emerald-400">0%</span></p>
+                <div class="mt-4 pt-3 border-t border-emerald-500/10 grid grid-cols-2 text-[10px] font-bold">
+                    <div class="text-left">
+                        <p class="text-slate-500 uppercase">Debitado Real</p>
+                        <p id="debitoTotal" class="text-white text-xs"></p>
                     </div>
-                    <div>
-                        <p>USDT: <span id="usdt" class="text-emerald-400">0.00</span></p>
+                    <div class="text-right">
+                        <p class="text-slate-500 uppercase">Recibes USDT</p>
+                        <p id="usdtFinal" class="text-white text-xs"></p>
                     </div>
                 </div>
             </div>
@@ -76,37 +78,72 @@
     </div>
 
     <script>
+        const ids = ['saldo', 'comB', 'comF', 'tasaS', 'tasaV'];
+
+        // 1. Sanitizar en tiempo real: reemplaza coma por punto mientras escribes
+        function sanitizar(el) {
+            let val = el.value;
+            // Reemplaza comas por puntos y elimina cualquier cosa que no sea número o punto
+            val = val.replace(/,/g, '.');
+            val = val.replace(/[^0-9.]/g, '');
+            // Evita múltiples puntos
+            const parts = val.split('.');
+            if (parts.length > 2) val = parts[0] + '.' + parts.slice(1).join('');
+            el.value = val;
+        }
+
+        // 2. Botón manual para forzar la normalización de todo
+        function normalizarTodo() {
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                el.value = el.value.replace(/,/g, '.');
+            });
+            calc();
+        }
+
+        function resetear() {
+            document.getElementById('saldo').value = '';
+            calc();
+        }
+
+        window.onload = () => {
+            ids.forEach(id => {
+                const saved = localStorage.getItem(id);
+                if(saved && id !== 'saldo') document.getElementById(id).value = saved;
+            });
+            calc();
+        };
+
         function calc() {
+            // Convertimos los strings a números reales
             const saldo = parseFloat(document.getElementById('saldo').value) || 0;
             const comB = parseFloat(document.getElementById('comB').value) || 0;
             const comF = parseFloat(document.getElementById('comF').value) || 0;
             const tasaS = parseFloat(document.getElementById('tasaS').value) || 0;
             const tasaV = parseFloat(document.getElementById('tasaV').value) || 0;
 
-            // 1. Calcular cuánto pasar (Monto Neto para la tarjeta)
+            // Guardar configuración (excepto el saldo por privacidad)
+            ids.forEach(id => {
+                if(id !== 'saldo') localStorage.setItem(id, document.getElementById(id).value);
+            });
+
+            // Lógica
             const montoNeto = saldo / (1 + (comB / 100));
             const comisionUsd = saldo - montoNeto;
-
-            // 2. USDT que quedan después de la comisión de fondeo
-            const usdtRecibidos = montoNeto * (1 - (comF / 100));
-
-            // 3. Profit
-            const costoInversionBs = saldo * tasaS;
-            const retornoBs = usdtRecibidos * tasaV;
-            const profitBs = retornoBs - costoInversionBs;
-            const profitUsd = profitBs / tasaV;
-            const roi = (profitBs / costoInversionBs) * 100;
+            const usdtNetos = montoNeto * (1 - (comF / 100));
+            const costoTotalVes = saldo * tasaS;
+            const retornoVes = usdtNetos * tasaV;
+            const profitVes = retornoVes - costoTotalVes;
+            const profitUsd = profitVes / tasaV;
 
             // UI
-            document.getElementById('montoNeto').innerText = "$" + montoNeto.toFixed(2);
-            document.getElementById('comUsd').innerText = "Comisión Banco: -$" + comisionUsd.toFixed(2);
-            document.getElementById('profitBs').innerText = (profitBs >= 0 ? "+" : "") + profitBs.toLocaleString('es-VE', {minimumFractionDigits: 2}) + " Bs";
-            document.getElementById('profitUsd').innerText = "Equivalente a $" + profitUsd.toFixed(2);
-            document.getElementById('roi').innerText = roi.toFixed(2) + "%";
-            document.getElementById('usdt').innerText = usdtRecibidos.toFixed(2);
+            document.getElementById('montoNeto').innerText = saldo > 0 ? "$" + montoNeto.toFixed(2) : "$0.00";
+            document.getElementById('comUsd').innerText = saldo > 0 ? "Comisión Banco: -$" + comisionUsd.toFixed(2) : "Esperando saldo...";
+            document.getElementById('profitBs').innerText = profitVes.toLocaleString('es-VE', {minimumFractionDigits: 2}) + " Bs";
+            document.getElementById('profitUsd').innerText = "Ganancia real: $" + profitUsd.toFixed(2);
+            document.getElementById('debitoTotal').innerText = costoTotalVes.toLocaleString('es-VE', {minimumFractionDigits: 0}) + " Bs";
+            document.getElementById('usdtFinal').innerText = usdtNetos.toFixed(2) + " USDT";
         }
-
-        window.onload = calc;
     </script>
 </body>
 </html>
